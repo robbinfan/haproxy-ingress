@@ -256,6 +256,19 @@ frontend httpsfront-default-backend
     default_backend {{ $location.Backend }}
 
 ######
+###### TCP Backends
+######
+
+{{ range $i, $tcpServer := $ing.TCPEndpoints }}
+listen tcp-{{ $tcpServer.Port }}-{{ $tcpServer.Backend.Namespace }}-{{ $tcpServer.Backend.Name }}-{{ $tcpServer.Backend.Port }}
+    bind *:{{ $tcpServer.Port }}
+    mode tcp
+    {{ range $j, $endpoint := $tcpServer.Endpoints }}
+    server svc{{ $j }} {{ $endpoint.Address }}:{{ $endpoint.Port }} {{ if $tcpServer.Backend.UseProxyProtocol }} send-proxy {{ end }}
+    {{ end }}
+{{ end }}
+
+######
 ###### Error pages
 ######
 backend error413
